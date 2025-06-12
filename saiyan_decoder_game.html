@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scouter Black: Planet Vegeta Decoder</title>
+  <style>
+    body {
+      background: black;
+      color: lime;
+      font-family: 'Courier New', Courier, monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    h1 {
+      color: red;
+      text-shadow: 0 0 10px red;
+    }
+    .choice-btn {
+      background: darkred;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 10px;
+      cursor: pointer;
+      font-size: 1.2em;
+    }
+    #gameArea {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .code-box {
+      background: red;
+      color: black;
+      font-weight: bold;
+      padding: 10px;
+      margin: 5px;
+      cursor: pointer;
+      display: inline-block;
+      animation: flicker 0.5s infinite alternate;
+    }
+    @keyframes flicker {
+      0% {opacity: 0.3;}
+      100% {opacity: 1;}
+    }
+    #timer {
+      color: yellow;
+      font-size: 1.5em;
+      margin-top: 10px;
+    }
+    #message {
+      margin-top: 20px;
+      font-size: 1.2em;
+      color: white;
+      white-space: pre-wrap;
+      max-width: 600px;
+    }
+  </style>
+</head>
+<body>
+  <h1>SCOUTER BLACK: PLANET VEGETA DECODER</h1>
+  <div id="roleChoice">
+    <button class="choice-btn" onclick="startGame('Saiyan')">Saiyan</button>
+    <button class="choice-btn" onclick="startGame('FriezaForce')">Frieza Force</button>
+  </div>
+
+  <div id="gameArea">
+    <div id="codeContainer"></div>
+    <div id="timer">Time: 60</div>
+    <div id="message"></div>
+  </div>
+
+  <script>
+    const wordSequence = [
+      "Pod#4339",
+      "Tuffle Residue",
+      "Saiyan DNA",
+      "Power Surge",
+      "Recall Order",
+      "Bardock",
+      "BABYLON",
+      "Black Signal",
+      "Oozaru",
+      "Sector 9C",
+      "Containment"
+    ];
+
+    const wordMessages = {
+      "Pod#4339": "Decoding... Entry confirmed: Unknown Saiyan infant deployed.",
+      "Tuffle Residue": "Background scan: Ancient residue. Non-Saiyan. Rejected DNA?",
+      "Saiyan DNA": "Mutagenic enhancements detected. Unauthorized bio-tampering.",
+      "Power Surge": "Scouter logs corrupted during high energy spike. Event unknown.",
+      "Recall Order": "Order recall failed. Infant pod override locked.",
+      "Bardock": "Audio found: \"He knows. Frieza knows.\" Message severed.",
+      "BABYLON": "Project BABYLON classified. Controlled Oozaru protocol - FAILED.",
+      "Black Signal": "Transmission loops in negative band. Origin: deep core.",
+      "Oozaru": "Form stabilized in infant. Impossible. Subject should’ve died.",
+      "Sector 9C": "Ghost energy signatures found. Entire quadrant... missing?",
+      "Containment": "FAILURE. FAILURE. FAILURE. \"He’s loose.\""
+    };
+
+    let currentIndex = 0;
+    let timeLeft = 60;
+    let timer;
+    let errorCount = 0;
+    const maxErrors = 3;
+
+    function startGame(role) {
+      document.getElementById('roleChoice').style.display = 'none';
+      document.getElementById('gameArea').style.display = 'flex';
+      const container = document.getElementById('codeContainer');
+      container.innerHTML = '';
+
+      wordSequence.forEach(word => {
+        const div = document.createElement('div');
+        div.className = 'code-box';
+        div.textContent = word;
+        div.onclick = () => handleClick(word, div);
+        container.appendChild(div);
+      });
+
+      document.getElementById('message').textContent = 'Click the correct code fragments in order to decode the truth. Mistakes have consequences...';
+
+      timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timer').textContent = `Time: ${timeLeft}`;
+        if (timeLeft === 0) {
+          clearInterval(timer);
+          death("Time expired. He found you.");
+        }
+      }, 1000);
+    }
+
+    function handleClick(word, div) {
+      if (word === wordSequence[currentIndex]) {
+        div.style.background = 'green';
+        div.style.color = 'white';
+        div.style.pointerEvents = 'none';
+        document.getElementById('message').textContent = wordMessages[word];
+        currentIndex++;
+
+        if (currentIndex === wordSequence.length) {
+          clearInterval(timer);
+          document.getElementById('message').textContent = "TRANSMISSION COMPLETE:\n\n\"He will rise from the ashes. You cannot stop him.\"";
+        }
+      } else {
+        errorCount++;
+        div.style.background = 'darkred';
+        document.getElementById('message').textContent = `Incorrect code fragment. ${3 - errorCount} mistakes remaining.`;
+
+        if (errorCount >= maxErrors) {
+          clearInterval(timer);
+          death("You decoded incorrectly. A shadow stabs through your spine. It's over.");
+        }
+      }
+    }
+
+    function death(message) {
+      document.body.style.background = 'darkred';
+      document.getElementById('codeContainer').style.display = 'none';
+      document.getElementById('timer').style.display = 'none';
+      document.getElementById('message').textContent = `\n\n${message}`;
+    }
+  </script>
+</body>
+</html>
