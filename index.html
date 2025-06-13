@@ -1,172 +1,302 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Scouter Black: Planet Vegeta Decoder</title>
-  <style>
-    body {
-      background: black;
-      color: lime;
-      font-family: 'Courier New', Courier, monospace;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      overflow: hidden;
-    }
-    h1 {
-      color: red;
-      text-shadow: 0 0 10px red;
-    }
-    .choice-btn {
-      background: darkred;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      margin: 10px;
-      cursor: pointer;
-      font-size: 1.2em;
-    }
-    #gameArea {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
-    .code-box {
-      background: red;
-      color: black;
-      font-weight: bold;
-      padding: 10px;
-      margin: 5px;
-      cursor: pointer;
-      display: inline-block;
-      animation: flicker 0.5s infinite alternate;
-    }
-    @keyframes flicker {
-      0% {opacity: 0.3;}
-      100% {opacity: 1;}
-    }
-    #timer {
-      color: yellow;
-      font-size: 1.5em;
-      margin-top: 10px;
-    }
-    #message {
-      margin-top: 20px;
-      font-size: 1.2em;
-      color: white;
-      white-space: pre-wrap;
-      max-width: 600px;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Scouter Decoder - Planet Vegeta</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+
+  body {
+    margin: 0; padding: 0;
+    background: #0a0014;
+    color: #00ff00;
+    font-family: 'Orbitron', monospace;
+    display: flex; flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  #scouter {
+    position: relative;
+    width: 450px;
+    background: radial-gradient(circle at center, #001100 30%, #003300 80%);
+    border: 3px solid #00ff00;
+    border-radius: 15px;
+    box-shadow: 0 0 20px #00ff00;
+    padding: 20px;
+    text-align: center;
+  }
+
+  h1 {
+    color: #00ff00;
+    font-weight: 700;
+    text-shadow:
+      0 0 5px #00ff00,
+      0 0 10px #00ff00,
+      0 0 20px #00ff00;
+    margin-bottom: 15px;
+  }
+
+  .question {
+    margin: 20px 0 10px;
+    font-size: 1.2em;
+  }
+
+  .choices {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  button.choice {
+    background: transparent;
+    border: 2px solid #00ff00;
+    color: #00ff00;
+    padding: 10px;
+    font-size: 1em;
+    cursor: pointer;
+    border-radius: 8px;
+    text-shadow: 0 0 8px #00ff00;
+    transition: background-color 0.2s, color 0.2s;
+  }
+  button.choice:hover {
+    background-color: #00ff00;
+    color: #001100;
+    font-weight: bold;
+    text-shadow: none;
+  }
+
+  #output {
+    margin-top: 25px;
+    font-size: 1em;
+    min-height: 80px;
+    line-height: 1.4;
+    white-space: pre-line;
+    border: 1px solid #00ff00;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: inset 0 0 15px #00ff00;
+    background: #002200;
+  }
+
+  #scanline {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #00ff00, transparent);
+    animation: scan 3s linear infinite;
+    border-radius: 10px;
+  }
+
+  @keyframes scan {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+
+  #footer {
+    margin-top: 20px;
+    color: #004400;
+    font-size: 0.8em;
+    font-style: italic;
+    user-select: none;
+  }
+
+  #file-choices {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  button.file-choice {
+    background: transparent;
+    border: 1px solid #00ff00;
+    color: #00ff00;
+    padding: 8px;
+    font-size: 0.9em;
+    cursor: pointer;
+    border-radius: 6px;
+    text-shadow: 0 0 6px #00ff00;
+    transition: background-color 0.2s, color 0.2s;
+  }
+  button.file-choice:hover {
+    background-color: #00ff00;
+    color: #001100;
+    font-weight: bold;
+    text-shadow: none;
+  }
+</style>
 </head>
 <body>
-  <h1>SCOUTER BLACK: PLANET VEGETA DECODER</h1>
-  <div id="roleChoice">
-    <button class="choice-btn" onclick="startGame('Saiyan')">Saiyan</button>
-    <button class="choice-btn" onclick="startGame('FriezaForce')">Frieza Force</button>
+  <div id="scouter">
+    <h1>SCOUTER DECODE - PLANET VEGETA</h1>
+    <div id="scanline"></div>
+
+    <div id="question-area">
+      <div class="question" id="question-text"></div>
+      <div class="choices" id="choices"></div>
+    </div>
+
+    <div id="output"></div>
   </div>
 
-  <div id="gameArea">
-    <div id="codeContainer"></div>
-    <div id="timer">Time: 60</div>
-    <div id="message"></div>
-  </div>
+  <div id="footer">POWER LEVEL ANALYSIS - DATA ACQUISITION IN PROGRESS...</div>
 
-  <script>
-    const wordSequence = [
-      "Pod#4339",
-      "Tuffle Residue",
-      "Saiyan DNA",
-      "Power Surge",
-      "Recall Order",
-      "Bardock",
-      "BABYLON",
-      "Black Signal",
-      "Oozaru",
-      "Sector 9C",
-      "Containment"
-    ];
+<script>
+  const questions = [
+    {
+      text: "What do you suspect about King Vegeta's heirs?",
+      choices: [
+        "They hide a secret child out of wedlock.",
+        "All heirs are publicly acknowledged.",
+        "He has no heirs besides Prince Vegeta.",
+        "He has exiled many potential heirs."
+      ],
+      outputs: [
+        "Hidden bloodlines detected... uncertainty grows.",
+        "Official records confirmed, but is it all truth?",
+        "Only the prince remains, but whispers say otherwise.",
+        "Exile shadows the royal family, unknown dangers lurk."
+      ]
+    },
+    {
+      text: "What do you hear about the Saiyan Super Legend?",
+      choices: [
+        "A warrior who can destroy planets at will.",
+        "Just a myth told to scare low-class Saiyans.",
+        "An ancient prophecy hidden in the stars.",
+        "A name erased from all records deliberately."
+      ],
+      outputs: [
+        "Power beyond comprehension. Fear is justified.",
+        "Dismissed by many, but fear still lingers deep.",
+        "Prophecy detected, but fragmented and unclear.",
+        "Records vanish mysteriously, intent unknown."
+      ]
+    },
+    {
+      text: "How does the Frieza Force monitor Planet Vegeta?",
+      choices: [
+        "Through hidden scouters in the atmosphere.",
+        "Direct surveillance by elite commandos.",
+        "By intercepting all communications.",
+        "They do not watch — they prepare for war."
+      ],
+      outputs: [
+        "Scouter signals flicker; unseen eyes everywhere.",
+        "Commandos move silently, their presence unseen.",
+        "Communication lines corrupted, secrets leak slowly.",
+        "War drums echo faintly... prepare or perish."
+      ]
+    },
+    {
+      text: "What do you believe will happen soon?",
+      choices: [
+        "A purge of the Saiyan race by Frieza.",
+        "An uprising led by hidden Saiyan rebels.",
+        "The awakening of the Legendary Super Saiyan.",
+        "Planet Vegeta's destruction is imminent."
+      ],
+      outputs: [
+        "Dark plans unfold, survival odds dwindling.",
+        "Hope flickers amidst shadows of rebellion.",
+        "Power stirs deep beneath the surface.",
+        "Catastrophe looms — escape if you can."
+      ]
+    }
+  ];
 
-    const wordMessages = {
-      "Pod#4339": "Decoding... Entry confirmed: Unknown Saiyan infant deployed.",
-      "Tuffle Residue": "Background scan: Ancient residue. Non-Saiyan. Rejected DNA?",
-      "Saiyan DNA": "Mutagenic enhancements detected. Unauthorized bio-tampering.",
-      "Power Surge": "Scouter logs corrupted during high energy spike. Event unknown.",
-      "Recall Order": "Order recall failed. Infant pod override locked.",
-      "Bardock": "Audio found: \"He knows. Frieza knows.\" Message severed.",
-      "BABYLON": "Project BABYLON classified. Controlled Oozaru protocol - FAILED.",
-      "Black Signal": "Transmission loops in negative band. Origin: deep core.",
-      "Oozaru": "Form stabilized in infant. Impossible. Subject should’ve died.",
-      "Sector 9C": "Ghost energy signatures found. Entire quadrant... missing?",
-      "Containment": "FAILURE. FAILURE. FAILURE. \"He’s loose.\""
-    };
+  const secretFiles = [
+    {
+      title: "Zui - Spaceport Low Management",
+      content: "Zui, a low-ranking but cunning officer at the spaceport, is known to favor Saiyans like Romesca and Bage. Quietly, he provides subtle assistance, a rare ally in a brutal world."
+    },
+    {
+      title: "Mang - The Rebel Who Owns a Moon",
+      content: "Mang, a rebellious alien with an unknown past, claims ownership of a hidden moon. His motives remain unclear but rumors suggest he harbors secrets threatening the Frieza Force."
+    },
+    {
+      title: "King Vegeta and Tarble",
+      content: "King Vegeta is rumored to have hidden a second son, Tarble, away from prying eyes. The boy’s existence is a carefully guarded secret, possibly to protect him from political machinations."
+    },
+    {
+      title: "The Moon and Oozaru",
+      content: "The Great Ape transformation is tied to the moon’s energy. Some files hint at a catastrophic experiment linked to the moon’s destruction and lost Oozaru secrets."
+    },
+    {
+      title: "Missing Spacepod - Last Seen With a Saiyan Warrior",
+      content: "A spacepod disappeared under mysterious circumstances. Last data indicates it was with a Saiyan warrior considered unimportant by most, but the truth may be far darker."
+    },
+    {
+      title: "Child with Power Above the Prince",
+      content: "Whispers circulate about a child born with power surpassing Prince Vegeta’s. Hidden away to prevent chaos, this child could change the balance of power on Planet Vegeta forever."
+    },
+    {
+      title: "Deep Dark Secrets",
+      content: "Data fragments hint at genocide plans and betrayals within the Frieza Force. The shadows grow longer, and time runs out for the Saiyan race."
+    }
+  ];
 
-    let currentIndex = 0;
-    let timeLeft = 60;
-    let timer;
-    let errorCount = 0;
-    const maxErrors = 3;
+  let currentQuestion = 0;
+  const outputArea = document.getElementById('output');
+  const questionText = document.getElementById('question-text');
+  const choicesDiv = document.getElementById('choices');
 
-    function startGame(role) {
-      document.getElementById('roleChoice').style.display = 'none';
-      document.getElementById('gameArea').style.display = 'flex';
-      const container = document.getElementById('codeContainer');
-      container.innerHTML = '';
+  function loadQuestion() {
+    if (currentQuestion >= questions.length) {
+      questionText.textContent = "DECODING COMPLETE. INVESTIGATE DEEPER?";
+      choicesDiv.innerHTML = '';
 
-      wordSequence.forEach(word => {
-        const div = document.createElement('div');
-        div.className = 'code-box';
-        div.textContent = word;
-        div.onclick = () => handleClick(word, div);
-        container.appendChild(div);
-      });
+      const investigateBtn = document.createElement('button');
+      investigateBtn.className = 'choice';
+      investigateBtn.textContent = "Access Secret Files";
+      investigateBtn.onclick = showFiles;
+      choicesDiv.appendChild(investigateBtn);
 
-      document.getElementById('message').textContent = 'Click the correct code fragments in order to decode the truth. Mistakes have consequences...';
-
-      timer = setInterval(() => {
-        timeLeft--;
-        document.getElementById('timer').textContent = `Time: ${timeLeft}`;
-        if (timeLeft === 0) {
-          clearInterval(timer);
-          death("Time expired. He found you.");
-        }
-      }, 1000);
+      outputArea.textContent = "Choose wisely. The truth is buried deep within the shadows.";
+      return;
     }
 
-    function handleClick(word, div) {
-      if (word === wordSequence[currentIndex]) {
-        div.style.background = 'green';
-        div.style.color = 'white';
-        div.style.pointerEvents = 'none';
-        document.getElementById('message').textContent = wordMessages[word];
-        currentIndex++;
+    const q = questions[currentQuestion];
+    questionText.textContent = q.text;
+    choicesDiv.innerHTML = '';
+    outputArea.textContent = '';
 
-        if (currentIndex === wordSequence.length) {
-          clearInterval(timer);
-          document.getElementById('message').textContent = "TRANSMISSION COMPLETE:\n\n\"He will rise from the ashes. You cannot stop him.\"";
-        }
-      } else {
-        errorCount++;
-        div.style.background = 'darkred';
-        document.getElementById('message').textContent = `Incorrect code fragment. ${3 - errorCount} mistakes remaining.`;
+    q.choices.forEach((choice, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'choice';
+      btn.textContent = choice;
+      btn.onclick = () => {
+        outputArea.textContent = q.outputs[idx];
+        currentQuestion++;
+        setTimeout(loadQuestion, 2500);
+      };
+      choicesDiv.appendChild(btn);
+    });
+  }
 
-        if (errorCount >= maxErrors) {
-          clearInterval(timer);
-          death("You decoded incorrectly. A shadow stabs through your spine. It's over.");
-        }
-      }
-    }
+  function showFiles() {
+    questionText.textContent = "SELECT FILE TO DECODE";
+    choicesDiv.innerHTML = '';
+    outputArea.textContent = '';
 
-    function death(message) {
-      document.body.style.background = 'darkred';
-      document.getElementById('codeContainer').style.display = 'none';
-      document.getElementById('timer').style.display = 'none';
-      document.getElementById('message').textContent = `\n\n${message}`;
-    }
-  </script>
+    secretFiles.forEach((file, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'file-choice';
+      btn.textContent = file.title;
+      btn.onclick = () => {
+        outputArea.textContent = file.content;
+      };
+      choicesDiv.appendChild(btn);
+    });
+  }
+
+  loadQuestion();
+</script>
 </body>
 </html>
